@@ -920,9 +920,16 @@ void TraceManager::WriteSetDeviceMemoryPropertiesCommand(format::HandleId       
         // populate thread_data's scratch_buffer_ then write to file.
         auto& scratch_buffer = thread_data->GetScratchBuffer();
         scratch_buffer.clear();
+
+#if defined(__GNUC__) && (__GNUC__ > 10)
+        std::move(reinterpret_cast<uint8_t*>(&memory_properties_cmd),
+                  reinterpret_cast<uint8_t*>(&memory_properties_cmd) + sizeof(memory_properties_cmd),
+                  std::back_inserter(scratch_buffer));
+#else
         scratch_buffer.insert(scratch_buffer.end(),
                               reinterpret_cast<uint8_t*>(&memory_properties_cmd),
                               reinterpret_cast<uint8_t*>(&memory_properties_cmd) + sizeof(memory_properties_cmd));
+#endif
 
         format::DeviceMemoryType type;
         for (uint32_t i = 0; i < memory_properties.memoryTypeCount; ++i)

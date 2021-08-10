@@ -77,7 +77,11 @@ class HandleUnwrapMemory
         {
             next_buffer = &buffers_[next_index];
             next_buffer->clear();
+#if defined(__GNUC__) && (__GNUC__ > 10)
+            std::move(data, data + len, std::back_inserter(*next_buffer));
+#else
             next_buffer->insert(next_buffer->end(), data, data + len);
+#endif
         }
         else
         {
